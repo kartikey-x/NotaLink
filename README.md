@@ -1,69 +1,68 @@
-# React + TypeScript + Vite
+NotaLink: AI-Powered Note Sharing
+NotaLink is a sleek, real-time note-sharing application that allows users to create, save, and instantly share notes via a unique link. The standout feature is an integrated AI assistant, powered by a custom n8n workflow, designed to help users with writing, formatting, and general questions.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+✨ Features
+Instant Note Creation: Start typing immediately to create a new note.
 
-Currently, two official plugins are available:
+Real-time Sharing: Generate a unique URL to share your note with anyone.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Local Storage: Notes are automatically saved in the browser for persistence.
 
-## Expanding the ESLint configuration
+AI Assistant: A conversational chatbot, powered by a custom n8n workflow and Google Gemini, to assist with:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Writing tips and content generation.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Answering questions contextually.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+Conversational memory for follow-up questions.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Modern UI: A clean, dark-themed, and responsive interface built with React and Tailwind CSS.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Saved Notes Management: View, load, and delete previously saved notes.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+🛠️ Tech Stack
+Frontend: React, Vite, TypeScript
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Styling: Tailwind CSS
+
+AI & Automation: n8n.io
+
+Language Model: Google Gemini
+
+Icons: Lucide React
+
+🚀 Getting Started
+To run this project locally, follow these steps:
+
+Prerequisites
+Node.js (v18 or higher)
+
+An active n8n workflow with a webhook URL
+
+A Google Gemini API Key
+
+Installation & Setup
+Clone the repository:
+
+Bash
+
+git clone https://github.com/your-username/notalink-ai-notes.git
+cd notalink-ai-notes
+Install dependencies:
+
+Bash
+
+npm install
+Configure the AI Assistant:
+
+Open src/api.ts (or src/components/ChatBot.tsx).
+
+Find the N8N_WEBHOOK_URL constant.
+
+Replace the placeholder with your own n8n production webhook URL.
+
+Run the development server:
+
+Bash
+
+npm run dev
