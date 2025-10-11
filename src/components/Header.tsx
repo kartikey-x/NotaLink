@@ -1,11 +1,12 @@
 import React from 'react';
-import { Sparkles, Archive } from 'lucide-react';
+import { Sparkles, Archive, FilePlus2 } from 'lucide-react';
 
 interface HeaderProps {
   onViewSavedNotes: () => void;
+  onNewNote: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onViewSavedNotes }) => {
+const Header: React.FC<HeaderProps> = ({ onViewSavedNotes, onNewNote }) => {
   return (
     <header className="relative">
       <div className="flex items-center justify-between">
@@ -34,7 +35,17 @@ const Header: React.FC<HeaderProps> = ({ onViewSavedNotes }) => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          {/* --- "NEW NOTE" BUTTON RE-ADDED HERE --- */}
+          <button
+            onClick={onNewNote}
+            className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+            title="Create a new note"
+          >
+            <FilePlus2 className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-400 hidden sm:inline">New Note</span>
+          </button>
+          
           <button
             onClick={onViewSavedNotes}
             className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
