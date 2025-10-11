@@ -1,33 +1,25 @@
 NotaLink: AI-Powered Note Sharing
-NotaLink is a sleek, real-time note-sharing application that allows users to create, save, and instantly share notes via a unique link. The standout feature is an integrated AI assistant, powered by a custom n8n workflow, designed to help users with writing, formatting, and general questions.
+NotaLink is a sleek, real-time note-sharing application that allows users to create, save, and instantly share notes via a unique link. The standout feature is an integrated AI assistant, powered by an embedded chatbot, designed to help users with writing, formatting, and general questions.
 
 ✨ Features
-Instant Note Creation: Start typing immediately to create a new note.
+Instant Note Creation: A clean interface with header and empty-state buttons to immediately start a new note.
 
 Real-time Sharing: Generate a unique URL to share your note with anyone.
 
 Local Storage: Notes are automatically saved in the browser for persistence.
 
-AI Assistant: A conversational chatbot, powered by a custom n8n workflow and Google Gemini, to assist with:
-
-Writing tips and content generation.
-
-Answering questions contextually.
-
-Conversational memory for follow-up questions.
+AI Assistant: An embedded conversational chatbot (e.g., from Chatbase) to assist with writing tips and answer questions.
 
 Modern UI: A clean, dark-themed, and responsive interface built with React and Tailwind CSS.
 
-Saved Notes Management: View, load, and delete previously saved notes.
+Saved Notes Management: A modal interface to view, load, and delete previously saved notes.
 
 🛠️ Tech Stack
 Frontend: React, Vite, TypeScript
 
 Styling: Tailwind CSS
 
-AI & Automation: n8n.io
-
-Language Model: Google Gemini
+AI Chatbot: Chatbase (or any similar embeddable widget service)
 
 Icons: Lucide React
 
@@ -35,34 +27,35 @@ Icons: Lucide React
 To run this project locally, follow these steps:
 
 Prerequisites
+
 Node.js (v18 or higher)
 
-An active n8n workflow with a webhook URL
-
-A Google Gemini API Key
+An account with a chatbot provider like Chatbase
 
 Installation & Setup
+
 Clone the repository:
 
-Bash
-
+Bash:
 git clone https://github.com/your-username/notalink-ai-notes.git
 cd notalink-ai-notes
 Install dependencies:
 
-Bash
-
+Bash:
 npm install
 Configure the AI Assistant:
 
-Open src/api.ts (or src/components/ChatBot.tsx).
+Sign up for a service like Chatbase.
 
-Find the N8N_WEBHOOK_URL constant.
+Create and train a new chatbot with your desired data.
 
-Replace the placeholder with your own n8n production webhook URL.
+Find the "Embed" or "Integrate" section and copy the provided <script> tag.
+
+Open the index.html file in the root of your project.
+
+Paste the script you copied right before the closing </body> tag.
 
 Run the development server:
 
-Bash
-
+Bash:
 npm run dev
