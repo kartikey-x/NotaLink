@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Clock, Trash2, FileText } from 'lucide-react';
 import type { Note } from '../utils/noteStorage';
 
+
 interface SavedNotesModalProps {
   isOpen: boolean;
   onClose: () => void;
