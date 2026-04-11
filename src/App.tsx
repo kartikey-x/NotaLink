@@ -105,7 +105,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#fdf8f2] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #fdf8f2 0%, #fef3e2 40%, #fdf6ee 100%)' }}>
         <div className="flex items-center space-x-2 text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           <Feather className="w-5 h-5 animate-pulse" strokeWidth={1.5} />
           <span className="text-sm">Loading NotaLink…</span>
@@ -127,7 +127,9 @@ function App() {
           fontFamily: "'DM Sans', sans-serif"
         }}
       >
-        <div className="fixed inset-0 pointer-events-none opacity-[0.03]"
+        {/* Subtle paper texture */}
+        <div
+          className="fixed inset-0 pointer-events-none opacity-[0.03]"
           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23fff'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23fff'/%3E%3C/svg%3E\")" }}
         ></div>
 
@@ -136,6 +138,7 @@ function App() {
 
           <main className="mt-8">
             <div className="grid gap-6 lg:grid-cols-3">
+              {/* Editor */}
               <div className="lg:col-span-2">
                 {currentNote ? (
                   <NoteEditor
@@ -151,7 +154,10 @@ function App() {
                     <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
                       <Feather className="w-6 h-6 text-amber-600" strokeWidth={1.5} />
                     </div>
-                    <h2 className="text-lg font-semibold text-stone-600 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    <h2
+                      className="text-lg font-semibold text-stone-600 mb-1"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                    >
                       No note open
                     </h2>
                     <p className="text-sm text-stone-400">Select a saved note or create a new one</p>
@@ -159,6 +165,7 @@ function App() {
                 )}
               </div>
 
+              {/* Sidebar */}
               <div className="space-y-4">
                 <ShareButton
                   onShare={handleShare}
@@ -167,7 +174,10 @@ function App() {
                 />
 
                 <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-4">
-                  <h3 className="text-sm font-semibold text-stone-600 mb-3" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                  <h3
+                    className="text-sm font-semibold text-stone-600 mb-3"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
                     Quick Tips
                   </h3>
                   <ul className="space-y-1.5 text-xs text-stone-400">
