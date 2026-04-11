@@ -71,6 +71,8 @@ function App() {
     setCurrentNote({ id: generateNoteId(), content: '', createdAt: new Date(), updatedAt: new Date() });
     setHasUnsavedChanges(false);
     setShowSavedNotes(false);
+    setIsSharedView(false); // <-- add this
+    window.history.pushState({}, '', window.location.pathname); // <-- and this, clears ?note= from URL
   };
 
   const handleShare = () => {
@@ -95,6 +97,7 @@ function App() {
       setCurrentNote({ id: selectedNoteId, content: note.content, createdAt: note.createdAt, updatedAt: note.updatedAt });
       setHasUnsavedChanges(false);
       setShowSavedNotes(false);
+      setIsSharedView(false);
       window.history.pushState({}, '', window.location.pathname);
     }
   };
