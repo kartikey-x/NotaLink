@@ -127,7 +127,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
               ? 'border-purple-500/50 shadow-lg shadow-purple-500/20' 
               : 'border-white/10 hover:border-white/20'
             }
-            text-black placeholder-gray-500
+            placeholder-gray-500
             focus:outline-none
             ${readOnly ? 'cursor-default' : 'cursor-text'}
             ${readOnly ? 'text-white' : 'text-black'}

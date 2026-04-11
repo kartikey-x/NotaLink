@@ -62,7 +62,43 @@ function App() {
     setShowSavedNotes(false);
   };
 
-  // AFTER
+// Add this state at the top with the others
+const [isSharedView, setIsSharedView] = useState(false);
+
+// Update the useEffect
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedData = urlParams.get('note');
+
+  if (sharedData) {
+    const decoded = decodeNoteFromUrl(sharedData);
+    if (decoded !== null) {
+      const newId = generateNoteId();
+      setCurrentNote({ 
+        id: newId, 
+        content: decoded, 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      });
+      setIsSharedView(true); // <-- mark as shared
+    } else {
+      // fallback for old ID-based links
+      const sharedNote = loadNote(sharedData);
+      if (sharedNote) {
+        setCurrentNote({ 
+          id: sharedData, 
+          content: sharedNote.content, 
+          createdAt: sharedNote.createdAt, 
+          updatedAt: sharedNote.updatedAt 
+        });
+        setIsSharedView(true);
+      }
+    }
+  }
+
+  setIsLoading(false);
+}, []);
+
 const handleShare = () => {
   if (currentNote && currentNote.content.trim()) {
     saveNote(currentNote.id, currentNote.content);
@@ -126,7 +162,7 @@ const handleShare = () => {
                   content={currentNote.content}
                   onChange={handleNoteChange}
                   onSave={handleSaveNote}
-                  readOnly={false}
+                  readOnly={isSharedView}
                   hasUnsavedChanges={hasUnsavedChanges}
                 />
               ) : (
