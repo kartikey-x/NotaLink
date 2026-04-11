@@ -16,36 +16,20 @@ function App() {
   const [isSharedView, setIsSharedView] = useState(false);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedData = urlParams.get('note');
+  const hash = window.location.hash; // e.g. #note=SGlpaQ==
+  const match = hash.match(/^#note=(.+)$/);
+  const sharedData = match ? match[1] : null;
 
-    if (sharedData) {
-      const decoded = decodeNoteFromUrl(sharedData);
-      if (decoded !== null) {
-        const newId = generateNoteId();
-        setCurrentNote({
-          id: newId,
-          content: decoded,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        setIsSharedView(true);
-      } else {
-        const sharedNote = loadNote(sharedData);
-        if (sharedNote) {
-          setCurrentNote({
-            id: sharedData,
-            content: sharedNote.content,
-            createdAt: sharedNote.createdAt,
-            updatedAt: sharedNote.updatedAt
-          });
-          setIsSharedView(true);
-        }
-      }
+  if (sharedData) {
+    const decoded = decodeNoteFromUrl(sharedData);
+    if (decoded !== null) {
+      setCurrentNote({ id: generateNoteId(), content: decoded, createdAt: new Date(), updatedAt: new Date() });
+      setIsSharedView(true);
     }
+  }
 
-    setIsLoading(false);
-  }, []);
+  setIsLoading(false);
+}, []);
 
   const handleNoteChange = (content: string) => {
     setHasUnsavedChanges(true);
@@ -72,7 +56,7 @@ function App() {
     setHasUnsavedChanges(false);
     setShowSavedNotes(false);
     setIsSharedView(false); // <-- add this
-    window.history.pushState({}, '', window.location.pathname); // <-- and this, clears ?note= from URL
+    window.history.pushState({}, '', window.location.pathname);
   };
 
   const handleShare = () => {
@@ -81,7 +65,7 @@ function App() {
       setHasUnsavedChanges(false);
       setSavedNotes(getAllNotes());
       const encoded = encodeNoteToUrl(currentNote.content);
-      const shareUrl = `${window.location.origin}${window.location.pathname}?note=${encoded}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}#note=${encoded}`;
       navigator.clipboard.writeText(shareUrl);
       return shareUrl;
     }
