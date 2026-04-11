@@ -4,8 +4,9 @@ import Header from './components/Header';
 import NoteEditor from './components/NoteEditor';
 import ShareButton from './components/ShareButton';
 import SavedNotesModal from './components/SavedNotesModal';
-import { loadNote, saveNote, generateNoteId, getAllNotes, deleteNote, encodeNoteToUrl, decodeNoteFromUrl } from './utils/noteStorage';
-import { FilePlus2 } from 'lucide-react';
+import { loadNote, saveNote, generateNoteId, getAllNotes, deleteNote } from './utils/noteStorage';
+import { saveNoteToCloud, loadNoteFromCloud } from './utils/supabase';
+import { Feather } from 'lucide-react';
 
 function App() {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
@@ -14,22 +15,25 @@ function App() {
   const [showSavedNotes, setShowSavedNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSharedView, setIsSharedView] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
-  const hash = window.location.hash; // e.g. #note=SGlpaQ==
-  const match = hash.match(/^#note=(.+)$/);
-  const sharedData = match ? match[1] : null;
+    const hash = window.location.hash;
+    const match = hash.match(/^#note=(.+)$/);
+    const sharedId = match ? match[1] : null;
 
-  if (sharedData) {
-    const decoded = decodeNoteFromUrl(sharedData);
-    if (decoded !== null) {
-      setCurrentNote({ id: generateNoteId(), content: decoded, createdAt: new Date(), updatedAt: new Date() });
-      setIsSharedView(true);
+    if (sharedId) {
+      loadNoteFromCloud(sharedId).then((content) => {
+        if (content !== null) {
+          setCurrentNote({ id: generateNoteId(), content, createdAt: new Date(), updatedAt: new Date() });
+          setIsSharedView(true);
+        }
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
     }
-  }
-
-  setIsLoading(false);
-}, []);
+  }, []);
 
   const handleNoteChange = (content: string) => {
     setHasUnsavedChanges(true);
@@ -49,33 +53,37 @@ function App() {
   };
 
   const handleNewNote = () => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to create a new note?")) {
-      return;
-    }
+    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to create a new note?")) return;
     setCurrentNote({ id: generateNoteId(), content: '', createdAt: new Date(), updatedAt: new Date() });
     setHasUnsavedChanges(false);
     setShowSavedNotes(false);
-    setIsSharedView(false); // <-- add this
+    setIsSharedView(false);
     window.history.pushState({}, '', window.location.pathname);
   };
 
-  const handleShare = () => {
-    if (currentNote && currentNote.content.trim()) {
-      saveNote(currentNote.id, currentNote.content);
-      setHasUnsavedChanges(false);
-      setSavedNotes(getAllNotes());
-      const encoded = encodeNoteToUrl(currentNote.content);
-      const shareUrl = `${window.location.origin}${window.location.pathname}#note=${encoded}`;
-      navigator.clipboard.writeText(shareUrl);
-      return shareUrl;
+  const handleShare = async (): Promise<string | null> => {
+    if (!currentNote || !currentNote.content.trim()) return null;
+
+    setIsSharing(true);
+    saveNote(currentNote.id, currentNote.content);
+    setHasUnsavedChanges(false);
+    setSavedNotes(getAllNotes());
+
+    const cloudId = await saveNoteToCloud(currentNote.content);
+    setIsSharing(false);
+
+    if (!cloudId) {
+      alert('Failed to generate share link. Please try again.');
+      return null;
     }
-    return null;
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}#note=${cloudId}`;
+    navigator.clipboard.writeText(shareUrl);
+    return shareUrl;
   };
 
   const handleSelectNote = (selectedNoteId: string) => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to switch notes?")) {
-      return;
-    }
+    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to switch notes?")) return;
     const note = loadNote(selectedNoteId);
     if (note) {
       setCurrentNote({ id: selectedNoteId, content: note.content, createdAt: note.createdAt, updatedAt: note.updatedAt });
@@ -97,68 +105,92 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="text-purple-400 text-xl font-semibold">Loading NotaLink...</div>
+      <div className="min-h-screen bg-[#fdf8f2] flex items-center justify-center">
+        <div className="flex items-center space-x-2 text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <Feather className="w-5 h-5 animate-pulse" strokeWidth={1.5} />
+          <span className="text-sm">Loading NotaLink…</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Header
-          onViewSavedNotes={() => setShowSavedNotes(true)}
-          onNewNote={handleNewNote}
-        />
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
-        <main className="mt-8 space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              {currentNote ? (
-                <NoteEditor
-                  key={currentNote.id}
-                  content={currentNote.content}
-                  onChange={handleNoteChange}
-                  onSave={handleSaveNote}
-                  readOnly={isSharedView}
-                  hasUnsavedChanges={hasUnsavedChanges}
+      <div
+        className="min-h-screen text-stone-800"
+        style={{
+          background: 'linear-gradient(160deg, #fdf8f2 0%, #fef3e2 40%, #fdf6ee 100%)',
+          fontFamily: "'DM Sans', sans-serif"
+        }}
+      >
+        <div className="fixed inset-0 pointer-events-none opacity-[0.03]"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23fff'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23fff'/%3E%3C/svg%3E\")" }}
+        ></div>
+
+        <div className="relative container mx-auto px-4 py-8 max-w-4xl">
+          <Header onViewSavedNotes={() => setShowSavedNotes(true)} onNewNote={handleNewNote} />
+
+          <main className="mt-8">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                {currentNote ? (
+                  <NoteEditor
+                    key={currentNote.id}
+                    content={currentNote.content}
+                    onChange={handleNoteChange}
+                    onSave={handleSaveNote}
+                    readOnly={isSharedView}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                  />
+                ) : (
+                  <div className="h-96 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/30 text-center">
+                    <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                      <Feather className="w-6 h-6 text-amber-600" strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-lg font-semibold text-stone-600 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                      No note open
+                    </h2>
+                    <p className="text-sm text-stone-400">Select a saved note or create a new one</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <ShareButton
+                  onShare={handleShare}
+                  disabled={!currentNote || !currentNote.content.trim()}
+                  isLoading={isSharing}
                 />
-              ) : (
-                <div className="text-center h-96 flex flex-col justify-center items-center bg-white/5 rounded-xl border-2 border-dashed border-white/10">
-                  <FilePlus2 className="w-16 h-16 text-gray-500 mb-4" />
-                  <h2 className="text-xl font-semibold text-gray-300">No note selected</h2>
-                  <p className="text-gray-400">Select a note from your saved list or create a new one.</p>
+
+                <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-4">
+                  <h3 className="text-sm font-semibold text-stone-600 mb-3" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    Quick Tips
+                  </h3>
+                  <ul className="space-y-1.5 text-xs text-stone-400">
+                    <li>→ Click "New Note" to start writing</li>
+                    <li>→ Save your note before sharing</li>
+                    <li>→ Share generates a link anyone can open</li>
+                    <li>→ View all saved notes anytime</li>
+                  </ul>
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <ShareButton onShare={handleShare} disabled={!currentNote || !currentNote.content.trim()} />
-
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-                <h3 className="font-semibold text-gray-300 mb-2">Quick Tips</h3>
-                <ul className="text-sm text-gray-400 space-y-1">
-                  <li>• Click "New Note" in the header</li>
-                  <li>• Click save to store your notes</li>
-                  <li>• Click share to generate a link</li>
-                  <li>• View saved notes anytime</li>
-                </ul>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
 
-      <SavedNotesModal
-        notes={savedNotes}
-        isOpen={showSavedNotes}
-        onClose={() => setShowSavedNotes(false)}
-        onSelectNote={handleSelectNote}
-        onDeleteNote={handleDeleteNote}
-      />
-    </div>
+        <SavedNotesModal
+          notes={savedNotes}
+          isOpen={showSavedNotes}
+          onClose={() => setShowSavedNotes(false)}
+          onSelectNote={handleSelectNote}
+          onDeleteNote={handleDeleteNote}
+        />
+      </div>
+    </>
   );
 }
 
