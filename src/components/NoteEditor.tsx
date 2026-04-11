@@ -121,8 +121,12 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
           placeholder={readOnly ? "This note is read-only" : "Start writing your note here...\n\nUse **bold** or *italic* text\nCreate lists with •\nAdd quotes with >"}
           className={`
             w-full h-96 p-6 rounded-xl resize-none
-            bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm
+            backdrop-blur-sm
             border-2 transition-all duration-200
+            ${readOnly
+              ? 'bg-gray-900/80 text-gray-100'
+              : 'bg-gradient-to-br from-white/5 to-white/10 text-black'
+            }
             ${isFocused 
               ? 'border-purple-500/50 shadow-lg shadow-purple-500/20' 
               : 'border-white/10 hover:border-white/20'
@@ -130,7 +134,6 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
             placeholder-gray-500
             focus:outline-none
             ${readOnly ? 'cursor-default' : 'cursor-text'}
-            ${readOnly ? 'text-white' : 'text-black'}
           `}
         />
         
