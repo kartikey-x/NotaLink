@@ -13,28 +13,39 @@ function App() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSavedNotes, setShowSavedNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSharedView, setIsSharedView] = useState(false);
 
   useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedData = urlParams.get('note');
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedData = urlParams.get('note');
 
-  if (sharedData) {
-    // Try decoding as Base64 content first (new format)
-    const decoded = decodeNoteFromUrl(sharedData);
-    if (decoded !== null) {
-      const newId = generateNoteId();
-      setCurrentNote({ id: newId, content: decoded, createdAt: new Date(), updatedAt: new Date() });
-    } else {
-      // Fallback: old ID-based format (for previously saved notes)
-      const sharedNote = loadNote(sharedData);
-      if (sharedNote) {
-        setCurrentNote({ id: sharedData, content: sharedNote.content, createdAt: sharedNote.createdAt, updatedAt: sharedNote.updatedAt });
+    if (sharedData) {
+      const decoded = decodeNoteFromUrl(sharedData);
+      if (decoded !== null) {
+        const newId = generateNoteId();
+        setCurrentNote({
+          id: newId,
+          content: decoded,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        setIsSharedView(true);
+      } else {
+        const sharedNote = loadNote(sharedData);
+        if (sharedNote) {
+          setCurrentNote({
+            id: sharedData,
+            content: sharedNote.content,
+            createdAt: sharedNote.createdAt,
+            updatedAt: sharedNote.updatedAt
+          });
+          setIsSharedView(true);
+        }
       }
     }
-  }
 
-  setIsLoading(false);
-}, []);
+    setIsLoading(false);
+  }, []);
 
   const handleNoteChange = (content: string) => {
     setHasUnsavedChanges(true);
@@ -62,55 +73,18 @@ function App() {
     setShowSavedNotes(false);
   };
 
-// Add this state at the top with the others
-const [isSharedView, setIsSharedView] = useState(false);
-
-// Update the useEffect
-useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedData = urlParams.get('note');
-
-  if (sharedData) {
-    const decoded = decodeNoteFromUrl(sharedData);
-    if (decoded !== null) {
-      const newId = generateNoteId();
-      setCurrentNote({ 
-        id: newId, 
-        content: decoded, 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      });
-      setIsSharedView(true); // <-- mark as shared
-    } else {
-      // fallback for old ID-based links
-      const sharedNote = loadNote(sharedData);
-      if (sharedNote) {
-        setCurrentNote({ 
-          id: sharedData, 
-          content: sharedNote.content, 
-          createdAt: sharedNote.createdAt, 
-          updatedAt: sharedNote.updatedAt 
-        });
-        setIsSharedView(true);
-      }
+  const handleShare = () => {
+    if (currentNote && currentNote.content.trim()) {
+      saveNote(currentNote.id, currentNote.content);
+      setHasUnsavedChanges(false);
+      setSavedNotes(getAllNotes());
+      const encoded = encodeNoteToUrl(currentNote.content);
+      const shareUrl = `${window.location.origin}${window.location.pathname}?note=${encoded}`;
+      navigator.clipboard.writeText(shareUrl);
+      return shareUrl;
     }
-  }
-
-  setIsLoading(false);
-}, []);
-
-const handleShare = () => {
-  if (currentNote && currentNote.content.trim()) {
-    saveNote(currentNote.id, currentNote.content);
-    setHasUnsavedChanges(false);
-    setSavedNotes(getAllNotes());
-    const encoded = encodeNoteToUrl(currentNote.content);
-    const shareUrl = `${window.location.origin}${window.location.pathname}?note=${encoded}`;
-    navigator.clipboard.writeText(shareUrl);
-    return shareUrl;
-  }
-  return null;
-};
+    return null;
+  };
 
   const handleSelectNote = (selectedNoteId: string) => {
     if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to switch notes?")) {
@@ -128,7 +102,6 @@ const handleShare = () => {
   const handleDeleteNote = (noteIdToDelete: string) => {
     deleteNote(noteIdToDelete);
     setSavedNotes(getAllNotes());
-    
     if (currentNote && currentNote.id === noteIdToDelete) {
       setCurrentNote(null);
       setHasUnsavedChanges(false);
@@ -148,11 +121,11 @@ const handleShare = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Header 
+        <Header
           onViewSavedNotes={() => setShowSavedNotes(true)}
-          onNewNote={handleNewNote} 
+          onNewNote={handleNewNote}
         />
-        
+
         <main className="mt-8 space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
@@ -166,7 +139,6 @@ const handleShare = () => {
                   hasUnsavedChanges={hasUnsavedChanges}
                 />
               ) : (
-                // --- THIS SECTION HAS BEEN REVERTED TO ITS ORIGINAL STATE ---
                 <div className="text-center h-96 flex flex-col justify-center items-center bg-white/5 rounded-xl border-2 border-dashed border-white/10">
                   <FilePlus2 className="w-16 h-16 text-gray-500 mb-4" />
                   <h2 className="text-xl font-semibold text-gray-300">No note selected</h2>
@@ -174,10 +146,10 @@ const handleShare = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-4">
               <ShareButton onShare={handleShare} disabled={!currentNote || !currentNote.content.trim()} />
-              
+
               <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
                 <h3 className="font-semibold text-gray-300 mb-2">Quick Tips</h3>
                 <ul className="text-sm text-gray-400 space-y-1">
@@ -191,7 +163,7 @@ const handleShare = () => {
           </div>
         </main>
       </div>
-      
+
       <SavedNotesModal
         notes={savedNotes}
         isOpen={showSavedNotes}
