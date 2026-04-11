@@ -73,3 +73,14 @@ export const getAllNotes = (): Note[] => {
   // Sort by most recently updated
   return notes.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 };
+export const encodeNoteToUrl = (content: string): string => {
+  return btoa(unescape(encodeURIComponent(content)));
+};
+
+export const decodeNoteFromUrl = (encoded: string): string | null => {
+  try {
+    return decodeURIComponent(escape(atob(encoded)));
+  } catch {
+    return null;
+  }
+};

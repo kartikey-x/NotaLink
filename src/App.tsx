@@ -4,7 +4,7 @@ import Header from './components/Header';
 import NoteEditor from './components/NoteEditor';
 import ShareButton from './components/ShareButton';
 import SavedNotesModal from './components/SavedNotesModal';
-import { loadNote, saveNote, generateNoteId, getAllNotes, deleteNote } from './utils/noteStorage';
+import { loadNote, saveNote, generateNoteId, getAllNotes, deleteNote, encodeNoteToUrl, decodeNoteFromUrl } from './utils/noteStorage';
 import { FilePlus2 } from 'lucide-react';
 
 function App() {
@@ -15,18 +15,26 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedNoteId = urlParams.get('note');
-    
-    if (sharedNoteId) {
-      const sharedNote = loadNote(sharedNoteId);
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedData = urlParams.get('note');
+
+  if (sharedData) {
+    // Try decoding as Base64 content first (new format)
+    const decoded = decodeNoteFromUrl(sharedData);
+    if (decoded !== null) {
+      const newId = generateNoteId();
+      setCurrentNote({ id: newId, content: decoded, createdAt: new Date(), updatedAt: new Date() });
+    } else {
+      // Fallback: old ID-based format (for previously saved notes)
+      const sharedNote = loadNote(sharedData);
       if (sharedNote) {
-        setCurrentNote({ id: sharedNoteId, content: sharedNote.content, createdAt: sharedNote.createdAt, updatedAt: sharedNote.updatedAt });
+        setCurrentNote({ id: sharedData, content: sharedNote.content, createdAt: sharedNote.createdAt, updatedAt: sharedNote.updatedAt });
       }
     }
-    
-    setIsLoading(false);
-  }, []);
+  }
+
+  setIsLoading(false);
+}, []);
 
   const handleNoteChange = (content: string) => {
     setHasUnsavedChanges(true);
@@ -54,17 +62,19 @@ function App() {
     setShowSavedNotes(false);
   };
 
-  const handleShare = () => {
-    if (currentNote && currentNote.content.trim()) {
-      saveNote(currentNote.id, currentNote.content);
-      setHasUnsavedChanges(false);
-      setSavedNotes(getAllNotes());
-      const shareUrl = `${window.location.origin}${window.location.pathname}?note=${currentNote.id}`;
-      navigator.clipboard.writeText(shareUrl);
-      return shareUrl;
-    }
-    return null;
-  };
+  // AFTER
+const handleShare = () => {
+  if (currentNote && currentNote.content.trim()) {
+    saveNote(currentNote.id, currentNote.content);
+    setHasUnsavedChanges(false);
+    setSavedNotes(getAllNotes());
+    const encoded = encodeNoteToUrl(currentNote.content);
+    const shareUrl = `${window.location.origin}${window.location.pathname}?note=${encoded}`;
+    navigator.clipboard.writeText(shareUrl);
+    return shareUrl;
+  }
+  return null;
+};
 
   const handleSelectNote = (selectedNoteId: string) => {
     if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to switch notes?")) {
