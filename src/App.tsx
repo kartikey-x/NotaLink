@@ -6,26 +6,29 @@ import ShareButton from './components/ShareButton';
 import SavedNotesModal from './components/SavedNotesModal';
 import { loadNote, saveNote, generateNoteId, getAllNotes, deleteNote } from './utils/noteStorage';
 import { saveNoteToCloud, loadNoteFromCloud } from './utils/supabase';
-import { Feather } from 'lucide-react';
+import { Feather, Sparkles } from 'lucide-react';
 
 function App() {
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
-  const [savedNotes, setSavedNotes] = useState<Note[]>(getAllNotes());
+  const [currentNote, setCurrentNote]         = useState<Note | null>(null);
+  const [savedNotes, setSavedNotes]           = useState<Note[]>(getAllNotes());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [showSavedNotes, setShowSavedNotes] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSharedView, setIsSharedView] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
+  const [showSavedNotes, setShowSavedNotes]   = useState(false);
+  const [isLoading, setIsLoading]             = useState(true);
+  const [isSharedView, setIsSharedView]       = useState(false);
+  const [isSharing, setIsSharing]             = useState(false);
 
   useEffect(() => {
-    const hash = window.location.hash;
-    const match = hash.match(/^#note=(.+)$/);
+    const hash   = window.location.hash;
+    const match  = hash.match(/^#note=(.+)$/);
     const sharedId = match ? match[1] : null;
 
     if (sharedId) {
       loadNoteFromCloud(sharedId).then((content) => {
         if (content !== null) {
-          setCurrentNote({ id: generateNoteId(), content, createdAt: new Date(), updatedAt: new Date() });
+          setCurrentNote({
+            id: generateNoteId(), content,
+            createdAt: new Date(), updatedAt: new Date(),
+          });
           setIsSharedView(true);
         }
         setIsLoading(false);
@@ -53,7 +56,7 @@ function App() {
   };
 
   const handleNewNote = () => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to create a new note?")) return;
+    if (hasUnsavedChanges && !window.confirm('You have unsaved changes. Create a new note anyway?')) return;
     setCurrentNote({ id: generateNoteId(), content: '', createdAt: new Date(), updatedAt: new Date() });
     setHasUnsavedChanges(false);
     setShowSavedNotes(false);
@@ -78,12 +81,12 @@ function App() {
     }
 
     const shareUrl = `${window.location.origin}${window.location.pathname}#note=${cloudId}`;
-    navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(shareUrl).catch(() => {});
     return shareUrl;
   };
 
   const handleSelectNote = (selectedNoteId: string) => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Are you sure you want to switch notes?")) return;
+    if (hasUnsavedChanges && !window.confirm('You have unsaved changes. Switch notes anyway?')) return;
     const note = loadNote(selectedNoteId);
     if (note) {
       setCurrentNote({ id: selectedNoteId, content: note.content, createdAt: note.createdAt, updatedAt: note.updatedAt });
@@ -103,42 +106,59 @@ function App() {
     }
   };
 
+  /* ─── Loading screen ──────────────────────────────────── */
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #fdf8f2 0%, #fef3e2 40%, #fdf6ee 100%)' }}>
-        <div className="flex items-center space-x-2 text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-          <Feather className="w-5 h-5 animate-pulse" strokeWidth={1.5} />
-          <span className="text-sm">Loading NotaLink…</span>
+      <>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+        <div className="loading-screen">
+          <div className="loading-inner">
+            <div className="loading-feather">
+              <Feather className="w-6 h-6 text-amber-700" strokeWidth={1.5} />
+            </div>
+            <p
+              className="text-sm text-stone-500 tracking-wider"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Loading NotaLink…
+            </p>
+            <div className="loading-dots">
+              <div className="loading-dot" />
+              <div className="loading-dot" />
+              <div className="loading-dot" />
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
+  /* ─── Main App ────────────────────────────────────────── */
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
 
-      <div
-        className="min-h-screen text-stone-800"
-        style={{
-          background: 'linear-gradient(160deg, #fdf8f2 0%, #fef3e2 40%, #fdf6ee 100%)',
-          fontFamily: "'DM Sans', sans-serif"
-        }}
-      >
-        {/* Subtle paper texture */}
-        <div
-          className="fixed inset-0 pointer-events-none opacity-[0.03]"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23fff'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23fff'/%3E%3C/svg%3E\")" }}
-        ></div>
+      <div className="app-bg text-stone-800">
+        {/* Paper texture */}
+        <div className="paper-texture" />
 
-        <div className="relative container mx-auto px-4 py-8 max-w-4xl">
-          <Header onViewSavedNotes={() => setShowSavedNotes(true)} onNewNote={handleNewNote} />
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
 
-          <main className="mt-8">
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Editor */}
+          <Header
+            onViewSavedNotes={() => setShowSavedNotes(true)}
+            onNewNote={handleNewNote}
+          />
+
+          <main className="mt-6 sm:mt-8">
+            {/* Mobile: stacked; Desktop: side by side */}
+            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
+
+              {/* ── Editor column ─────────────────────── */}
               <div className="lg:col-span-2">
                 {currentNote ? (
                   <NoteEditor
@@ -150,9 +170,9 @@ function App() {
                     hasUnsavedChanges={hasUnsavedChanges}
                   />
                 ) : (
-                  <div className="h-96 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/30 text-center">
-                    <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                      <Feather className="w-6 h-6 text-amber-600" strokeWidth={1.5} />
+                  <div className="empty-state" onClick={handleNewNote} style={{ cursor: 'pointer' }}>
+                    <div className="empty-state-icon">
+                      <Feather className="w-6 h-6 text-amber-700" strokeWidth={1.5} />
                     </div>
                     <h2
                       className="text-lg font-semibold text-stone-600 mb-1"
@@ -160,46 +180,83 @@ function App() {
                     >
                       No note open
                     </h2>
-                    <p className="text-sm text-stone-400">Select a saved note or create a new one</p>
+                    <p className="text-sm text-stone-400 mb-4">
+                      Select a saved note or start writing
+                    </p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleNewNote(); }}
+                      className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                        bg-gradient-to-br from-amber-500 to-amber-600 text-white
+                        shadow-md shadow-amber-200 hover:shadow-amber-300 hover:scale-105 active:scale-95"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      + New Note
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Sidebar */}
-              <div className="space-y-4">
+              {/* ── Sidebar ───────────────────────────── */}
+              <div className="space-y-4 animate-fade-up delay-300">
+
+                {/* Share */}
                 <ShareButton
                   onShare={handleShare}
                   disabled={!currentNote || !currentNote.content.trim()}
                   isLoading={isSharing}
                 />
 
-                <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-4">
-                  <h3
-                    className="text-sm font-semibold text-stone-600 mb-3"
-                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                  >
+                {/* Quick tips */}
+                <div className="tips-card animate-fade-up delay-400">
+                  <div className="tips-card-title" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" strokeWidth={1.5} />
                     Quick Tips
-                  </h3>
-                  <ul className="space-y-1.5 text-xs text-stone-400">
-                    <li>→ Click "New Note" to start writing</li>
-                    <li>→ Save your note before sharing</li>
-                    <li>→ Share generates a link anyone can open</li>
-                    <li>→ View all saved notes anytime</li>
-                  </ul>
+                  </div>
+                  {[
+                    'Click "New Note" to start writing',
+                    'Save before sharing your note',
+                    'Sharing generates a unique link',
+                    'View all saved notes anytime',
+                    'Press Esc to close any modal',
+                  ].map((tip, i) => (
+                    <div key={i} className="tips-item" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      <div className="tips-item-dot" />
+                      <span>{tip}</span>
+                    </div>
+                  ))}
                 </div>
+
+                {/* Saved notes count chip */}
+                {savedNotes.length > 0 && (
+                  <button
+                    onClick={() => setShowSavedNotes(true)}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-14px
+                      border border-amber-200/50 bg-white/50 hover:bg-amber-50/80
+                      transition-all duration-200 hover:border-amber-300/60
+                      hover:shadow-sm text-left animate-fade-up delay-400"
+                    style={{ borderRadius: '14px', fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    <span className="text-sm text-stone-600 font-medium">
+                      {savedNotes.length} saved {savedNotes.length === 1 ? 'note' : 'notes'}
+                    </span>
+                    <span className="text-xs text-amber-600 font-semibold tracking-wide">
+                      View all →
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           </main>
         </div>
-
-        <SavedNotesModal
-          notes={savedNotes}
-          isOpen={showSavedNotes}
-          onClose={() => setShowSavedNotes(false)}
-          onSelectNote={handleSelectNote}
-          onDeleteNote={handleDeleteNote}
-        />
       </div>
+
+      <SavedNotesModal
+        notes={savedNotes}
+        isOpen={showSavedNotes}
+        onClose={() => setShowSavedNotes(false)}
+        onSelectNote={handleSelectNote}
+        onDeleteNote={handleDeleteNote}
+      />
     </>
   );
 }
