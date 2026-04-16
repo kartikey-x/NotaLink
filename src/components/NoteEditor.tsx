@@ -233,8 +233,18 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
             textarea.setSelectionRange(selectionInfo.start, newEnd);
           }
         }, 50);
-      } catch (err) {
+      } catch (err) { // <-- Removed the : any
         console.error('AI transformation failed:', err);
+        
+        // Safely extract the error message
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        
+        // Provide user feedback if something goes wrong
+        if (errorMessage === 'GEMINI_API_KEY_MISSING') {
+          alert('⚠️ Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.');
+        } else {
+          alert('⚠️ Failed to connect to the AI. Please check your connection or try again later.');
+        }
       } finally {
         setIsAIProcessing(false);
         setAIProcessingActionId(null);
