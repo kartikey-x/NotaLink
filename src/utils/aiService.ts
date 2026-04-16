@@ -33,7 +33,8 @@ export const transformText = async (
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // 4. Get the fast flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // New code:
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     // 5. Generate the content
     const result = await model.generateContent({
