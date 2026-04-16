@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 api
 db.json
+repomix-output.md
+.env
+
