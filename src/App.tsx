@@ -54,18 +54,6 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Global keyboard shortcut: Cmd+K / Ctrl+K
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setShowCommandPalette((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
   // Load shared note from URL hash
   useEffect(() => {
     const hash = window.location.hash;
@@ -406,18 +394,7 @@ function App() {
                           color: isDarkMode ? '#57534e' : '#a8a29e',
                         }}
                       >
-                        or press{' '}
-                        <kbd
-                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                          style={{
-                            background: isDarkMode ? '#292524' : '#f5f5f4',
-                            border: `1px solid ${isDarkMode ? '#44403c' : '#e7e5e4'}`,
-                            color: isDarkMode ? '#a8a29e' : '#78716c',
-                          }}
-                        >
-                          ⌘K
-                        </kbd>{' '}
-                        to search
+                        or check settings in the Menu
                       </p>
                     </motion.div>
                   )}
@@ -468,7 +445,7 @@ function App() {
                     Quick Tips
                   </div>
                   {[
-                    'Press ⌘K for the command palette',
+                    'Access settings via the Menu',
                     'Select text to use AI tools ✨',
                     'Save before sharing your note',
                     'Sharing generates a unique link',
@@ -561,7 +538,7 @@ function App() {
         </div>
       </div>
 
-      {/* Command Palette */}
+      {/* Menu / Settings Panel */}
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
