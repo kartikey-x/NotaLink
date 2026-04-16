@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePlus2, BookOpen, Feather, Command } from 'lucide-react';
+import { FilePlus2, BookOpen, Feather, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MagneticButton from './MagneticButton';
 
@@ -59,10 +59,10 @@ const Header: React.FC<HeaderProps> = ({ onViewSavedNotes, onNewNote, onOpenComm
               onClick={onOpenCommandPalette}
               className="header-btn header-btn-secondary"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
-              title="Command Palette (⌘K)"
+              title="Open Menu"
             >
-              <Command className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
-              <span className="hidden sm:inline text-xs">⌘K</span>
+              <Menu className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
+              <span className="hidden sm:inline text-xs">Menu</span>
             </button>
           </MagneticButton>
 
